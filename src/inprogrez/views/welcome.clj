@@ -14,10 +14,14 @@
 (defn maybe-init []
   "Initialize connection & collection"
   (when (not (connection? *mongo-config*))
-    (let [mongo-url (get (System/getenv) "MONGOHQ_URL")
-          config    (split-mongo-url mongo-url)]
-      (mongo! :db (:db config) :host (:host config) :port (Integer. (:port config)))
-      (authenticate (:user config) (:pass config))
+    (let [mongo-url (get (System/getenv) "MONGOHQ_URL")]
+      (if mongo-url 
+        (let [config (split-mongo-url mongo-url)]
+          (mongo! :db (:db config) 
+                  :host (:host config) 
+                  :port (Integer. (:port config)))
+          (authenticate (:user config) (:pass config)))
+        (mongo! :db "db"))
       (or (collection-exists? :counter-coll) (create-collection! :counter-coll)))))
 
 (defpage "/welcome" []
